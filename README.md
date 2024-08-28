@@ -8,3 +8,4 @@ https://github.com/user-attachments/assets/008c64fe-de67-4922-85b6-14d0da893380
 
 Both tests are setup to run 4 iterations, you can run the [before](https://concurrent-styled-components.sanity.dev/?layoutTrashing=force&strategy=insert-during-render&maxIterations=4) and [after](https://concurrent-styled-components.sanity.dev/?layoutTrashing=force&strategy=use-insertion-effect&maxIterations=4) yourself to verify.
 In addition to finishing 4 iterations the fastest, the `useInsertionEffect` approach has a much more stable render and yield loop, where you see flashing tiles most of the time and the jank clock is mostly green. While the `insert during render` often locks up with the jank clock turning red, and large idle periods where the background render is being blocked and so no tiles are flashing as react render haven't completed yet.
+The `useInsertionEffect` variant is tested on a fork of `styled-components`, named `@sanity/styled-components`.
