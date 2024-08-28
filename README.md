@@ -2,7 +2,7 @@
 
 `styled-components`, as of `v6.1.12` or earlier, inserts CSS rules during render. This can lead to problems when React is processing a non-blocking state update (related to `React.lazy`, `Suspense`, `startTransition`, or `useDeferredValue`). React 18 introduced a new hook, `useInsertionEffect`, that ensures CSS rules are inserted after the render phase, but before `refs` are set, `useLayoutEffect` and `useEffect` hooks are called, and the browser paints.
 
-The video below demonstrates the difference in the two approaches when React is processing a very demanding render loop that uses `useDeferredValue` to opt-in to Concurrent Mode rendering. The current, insert CSS during render, approach is on the left hand side. The right hand side uses a fork of `styled-components`, which inserts CSS in `useInsertionEffect` instead ([#4332](https://github.com/styled-components/styled-components/pull/4332)) and is almost twice as fast:
+The video below demonstrates the difference in the two approaches when React is processing a very demanding render loop that uses `useDeferredValue` to opt-in to Concurrent Mode rendering. The current, insert CSS during render, approach is on the right hand side. The left hand side uses a fork of `styled-components`, which inserts CSS in `useInsertionEffect` instead ([#4332](https://github.com/styled-components/styled-components/pull/4332)) and is almost twice as fast:
 
 https://github.com/user-attachments/assets/008c64fe-de67-4922-85b6-14d0da893380
 
