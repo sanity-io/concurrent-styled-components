@@ -5,7 +5,7 @@ const nextConfig: NextConfig = {
     reactCompiler: true,
   },
   env: {
-    REACT_APP_SC_DISABLE_SPEEDY: 'false',
+    SC_DISABLE_SPEEDY: 'false',
   },
 }
 
