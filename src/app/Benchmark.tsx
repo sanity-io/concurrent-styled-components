@@ -29,11 +29,12 @@ const BOX_SIZE = 32
 const chars = `!§$%/()=?*#<>-_.:,;+0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz`
 
 type StrategyType = 'insert-during-render' | 'no-css-in-js' | 'use-insertion-effect'
+type LayoutThrashingType = 'force' | 'avoid'
 
 export default function Benchmark(props: {
   children: React.ReactNode
   strategy: StrategyType
-  layoutTrashing: 'force' | 'avoid'
+  layoutTrashing: LayoutThrashingType
   fps: 'show' | 'hide'
   distribute: boolean
   maxIterations: number
@@ -53,7 +54,6 @@ export default function Benchmark(props: {
     l: 5,
     c: 25,
   })
-  const palette = hueShiftPalette.map((color) => formatHex(color))
 
   const handleTick = useEffectEvent(() => {
     setHueShiftPalette(generateHueShiftPalette())
@@ -144,28 +144,18 @@ export default function Benchmark(props: {
       >
         {children}
       </div>
-      <div
+      <Cells
         key={strategy}
-        ref={cellsRef}
-        className="grid w-full justify-stretch"
-        style={{
-          textAlign: 'center',
-          grid: `minmax(${BOX_SIZE}px, min-content) / repeat(${cols}, minmax(${BOX_SIZE}px, 1fr))`,
-        }}
-      >
-        {cells.map((cell) => (
-          <Cell
-            key={cell}
-            id={cell}
-            distribute={distribute}
-            palette={palette}
-            layoutTrashing={layoutTrashing}
-            strategy={strategy}
-            tick={tick}
-            registerRenderedCell={registerRenderedCell}
-          />
-        ))}
-      </div>
+        cells={cells}
+        cellsRef={cellsRef}
+        cols={cols}
+        distribute={distribute}
+        hueShiftPalette={hueShiftPalette}
+        layoutTrashing={layoutTrashing}
+        registerRenderedCell={registerRenderedCell}
+        strategy={strategy}
+        tick={tick}
+      />
       {fps === 'show' && (
         <>
           <Clock tick={tick} tock={tock} />
@@ -176,6 +166,57 @@ export default function Benchmark(props: {
   )
 }
 Benchmark.displayName = 'Benchmark'
+
+function Cells(props: {
+  cells: string[]
+  cellsRef: React.RefObject<HTMLDivElement>
+  cols: number
+  distribute: boolean
+  hueShiftPalette: ReturnType<typeof createHueShiftPalette>
+  layoutTrashing: LayoutThrashingType
+  registerRenderedCell: (cell: string) => void
+  strategy: StrategyType
+  tick: number
+}) {
+  const {
+    cells,
+    cellsRef,
+    cols,
+    distribute,
+    hueShiftPalette,
+    layoutTrashing,
+    registerRenderedCell,
+    strategy,
+    tick,
+  } = props
+
+  const palette = hueShiftPalette.map((color) => formatHex(color))
+
+  return (
+    <div
+      ref={cellsRef}
+      className="grid w-full justify-stretch"
+      style={{
+        textAlign: 'center',
+        grid: `minmax(${BOX_SIZE}px, min-content) / repeat(${cols}, minmax(${BOX_SIZE}px, 1fr))`,
+      }}
+    >
+      {cells.map((cell) => (
+        <Cell
+          key={cell}
+          id={cell}
+          distribute={distribute}
+          palette={palette}
+          layoutTrashing={layoutTrashing}
+          strategy={strategy}
+          tick={tick}
+          registerRenderedCell={registerRenderedCell}
+        />
+      ))}
+    </div>
+  )
+}
+Cells.displayName = 'Cells'
 
 function Cell(props: {
   palette: string[]
