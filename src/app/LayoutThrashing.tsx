@@ -38,7 +38,7 @@ export const LayoutThrashing = memo(function LayoutThrashing({
     /**
      * We also slow down render itself, to make it even worse,
      * as it prolongs the duration of the React render while it's processing a
-     * non-blocking state update (triggered by the <Cell /> using useDeferredValue)
+     * non-blocking state update (triggered by the <Cell /> using startTransition)
      */
     const threshold = Math.random() * 0.1
     while (performance.now() - startTime < threshold) {
