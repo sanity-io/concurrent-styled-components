@@ -1,33 +1,64 @@
-import {__PRIVATE__, styled} from '@sanity/styled-components'
+import {__PRIVATE__, keyframes, styled} from '@sanity/styled-components'
+import type {Keyframes} from '@sanity/styled-components/dist/types'
 
 export function StrategyUseInsertionEffect(props: {
   char: string
   layoutTrashing: 'force' | 'avoid'
+  fill: string
+  duration: number
 }) {
-  const {char, layoutTrashing} = props
+  const {char, layoutTrashing, fill, duration} = props
   const fontWeight = Math.round(Math.random() * 8 + 1) * 100
+  const animation = keyframes`
+  0% {
+    background-color: ${fill};
+    color: ${fill};
+  }
+  100% {
+    background-color: transparent;
+    color: ${fill};
+  }
+`
   return layoutTrashing === 'force' ? (
-    <CellForceTrashingLayout $char={char} $fontWeight={fontWeight} />
+    <CellForceTrashingLayout
+      $char={char}
+      $duration={duration}
+      $animation={animation}
+      $fontWeight={fontWeight}
+    />
   ) : (
-    <CellAvoidTrashingLayout $char={char} />
+    <CellAvoidTrashingLayout $char={char} $duration={duration} $animation={animation} />
   )
 }
 
 StrategyUseInsertionEffect.displayName = 'StrategyUseInsertionEffect'
 
-const CellAvoidTrashingLayout = styled.span<{$char: string}>`
+const StyledCell = styled.span<{
+  $char: string
+  $animation: Keyframes
+  $duration: number
+  $fontWeight?: number
+}>`
+  .cell:has(&) {
+    animation: ${(props) => props.$animation} ${(props) => props.$duration}ms
+      cubic-bezier(0, 0, 0.2, 1) forwards;
+  }
+`
+
+const CellAvoidTrashingLayout = styled(StyledCell)`
   .cell:has(&)::before {
     content: '${(props) => props.$char || ' '}';
   }
 `
 
-const CellForceTrashingLayout = styled.span<{
-  $char: string
-  $fontWeight: number
-}>`
-  .cell:where(:has(&), [data-char='${(props) => props.$char}'])::before {
+const CellForceTrashingLayout = styled(StyledCell)`
+  .cell.cell:where(:has(&), [data-char='${(props) => props.$char}'])::before {
     content: '${(props) => props.$char || ' '}';
     font-weight: ${(props) => props.$fontWeight};
+    padding-right: ${(props) => (props.$fontWeight || 100) / 100}px;
+  }
+  .cell:where(:has(&), [data-char='${(props) => props.$char}'], [data-char])::before {
+    padding-left: ${(props) => (props.$fontWeight || 100) / 100}px;
   }
 `
 

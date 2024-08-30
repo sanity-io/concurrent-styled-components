@@ -2,7 +2,7 @@
 
 import sanityScPkg from '@sanity/styled-components/package.json'
 import {usePathname, useRouter, useSearchParams} from 'next/navigation'
-import {useId, useOptimistic} from 'react'
+import {useId, useOptimistic, useTransition} from 'react'
 import scPkg from 'styled-components/package.json'
 
 import {Card, CardContent, CardDescription, CardHeader, CardTitle} from '~/components/ui/card'
@@ -18,6 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '~/components/ui/select'
+import {Slider} from '~/components/ui/slider'
 
 import Benchmark from './Benchmark'
 
@@ -31,6 +32,7 @@ const keys = {
   mode: 'mode',
   distribute: 'distribute',
   interval: 'interval',
+  size: 'size',
   maxIterations: 'maxIterations',
 }
 
@@ -38,6 +40,7 @@ export default function BenchmarkControls() {
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
+  const [pending, startTransition] = useTransition()
 
   const createQueryString = (name: string, value: string) => {
     const params = new URLSearchParams(searchParams.toString())
@@ -51,14 +54,22 @@ export default function BenchmarkControls() {
   }
 
   const distribute = validateDistribute(searchParams.get(keys.distribute))
-  const interval = validateInterval(searchParams.get(keys.interval))
   const maxIterations = validateMaxIterations(searchParams.get(keys.maxIterations))
 
   const strategyId = useId()
+  const intervalId = useId()
+  const sizeId = useId()
   const layoutTrashingId = useId()
   const fpsId = useId()
+
   const [strategy, setPendingStrategy] = useOptimistic<ReturnType<typeof validateStrategy>>(
     validateStrategy(searchParams.get(keys.strategy)),
+  )
+  const [interval, setPendingInterval] = useOptimistic<ReturnType<typeof validateInterval>>(
+    validateInterval(searchParams.get(keys.interval)),
+  )
+  const [size, setPendingSize] = useOptimistic<ReturnType<typeof validateSize>>(
+    validateSize(searchParams.get(keys.size)),
   )
   const [layoutTrashing, setPendingLayoutTrashing] = useOptimistic<
     ReturnType<typeof validateLayoutTrashing>
@@ -74,7 +85,10 @@ export default function BenchmarkControls() {
       fps={fps}
       distribute={distribute}
       interval={interval}
+      size={size}
       maxIterations={maxIterations}
+      pending={pending}
+      startTransition={startTransition}
     >
       <Card>
         <CardHeader>
@@ -98,8 +112,10 @@ export default function BenchmarkControls() {
                 <Select
                   onValueChange={(value) => {
                     if (value) {
-                      pushQueryString(keys.strategy, value)
-                      setPendingStrategy(validateStrategy(value))
+                      startTransition(() => {
+                        pushQueryString(keys.strategy, value)
+                        setPendingStrategy(validateStrategy(value))
+                      })
                     }
                   }}
                   value={strategy}
@@ -125,15 +141,61 @@ export default function BenchmarkControls() {
                 </Select>
               </div>
               <div className="flex flex-col items-start space-y-1.5">
+                <Label htmlFor={intervalId}>Interval</Label>
+                <div className="grid w-full grid-cols-2 gap-2">
+                  <Slider
+                    onValueChange={([value]) => {
+                      if (value) {
+                        startTransition(() => {
+                          pushQueryString(keys.interval, `${value}`)
+                          setPendingInterval(validateInterval(value))
+                        })
+                      }
+                    }}
+                    value={[interval]}
+                    min={100}
+                    max={3000}
+                    step={100}
+                  />
+                  <output htmlFor={intervalId} className="text-sm font-medium leading-none">
+                    {interval < 1000 ? (interval / 1000).toFixed(1) : interval / 1000}s
+                  </output>
+                </div>
+              </div>
+              <div className="flex flex-col items-start space-y-1.5">
+                <Label htmlFor={sizeId}>Tile Size</Label>
+                <div className="grid w-full grid-cols-2 gap-2">
+                  <Slider
+                    onValueChange={([value]) => {
+                      if (value) {
+                        startTransition(() => {
+                          pushQueryString(keys.size, `${value}`)
+                          setPendingSize(validateSize(value))
+                        })
+                      }
+                    }}
+                    value={[size]}
+                    min={32}
+                    max={192}
+                    step={4}
+                  />
+                  <output htmlFor={sizeId} className="text-sm font-medium leading-none">
+                    {size}x{size}px
+                  </output>
+                </div>
+              </div>
+              <div className="flex flex-col items-start space-y-1.5">
                 <Label>Debug</Label>
                 <div className="items-top flex space-x-2">
                   <Checkbox
                     id={layoutTrashingId}
                     checked={layoutTrashing === 'force'}
                     onCheckedChange={(checked) => {
-                      const value = checked === true ? 'force' : 'avoid'
-                      pushQueryString(keys.layoutTrashing, value)
-                      setPendingLayoutTrashing(value)
+                      startTransition(() => {
+                        const value = checked === true ? 'force' : 'avoid'
+                        pushQueryString(keys.layoutTrashing, value)
+                        setPendingLayoutTrashing(value)
+                      })
                     }}
                   />
                   <div className="grid gap-1.5 leading-none">
@@ -163,9 +225,11 @@ export default function BenchmarkControls() {
                     id={fpsId}
                     checked={fps === 'show'}
                     onCheckedChange={(checked) => {
-                      const value = checked === true ? 'show' : 'hide'
-                      pushQueryString(keys.fps, value)
-                      setPendingFps(value)
+                      startTransition(() => {
+                        const value = checked === true ? 'show' : 'hide'
+                        pushQueryString(keys.fps, value)
+                        setPendingFps(value)
+                      })
                     }}
                   />
                   <div className="grid gap-1.5 leading-none">
@@ -226,9 +290,14 @@ function validateDistribute(distribute: string | null) {
   }
 }
 
-function validateInterval(interval: string | null) {
-  const parsed = parseInt(interval || '', 10)
-  return isNaN(parsed) ? 700 : Math.max(parsed, 0)
+function validateInterval(interval: string | number | null) {
+  const parsed = typeof interval === 'number' ? interval : parseInt(interval || '', 10)
+  return isNaN(parsed) ? 1000 : Math.max(parsed, 100)
+}
+
+function validateSize(size: string | number | null) {
+  const parsed = typeof size === 'number' ? size : parseInt(size || '', 10)
+  return isNaN(parsed) ? 32 : Math.max(parsed, 1)
 }
 
 function validateMaxIterations(maxIterations: string | null) {

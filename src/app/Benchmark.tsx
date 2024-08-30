@@ -1,14 +1,7 @@
 'use client'
 
 import {formatHex} from 'culori'
-import {
-  startTransition,
-  useDeferredValue,
-  useEffect,
-  useLayoutEffect,
-  useRef,
-  useState,
-} from 'react'
+import {useEffect, useLayoutEffect, useRef, useState} from 'react'
 import {useEffectEvent} from 'use-effect-event'
 
 import {createHueShiftPalette, generateHueShiftPalette} from '~/lib/palette'
@@ -25,7 +18,6 @@ import {
   StrategyUseInsertionEffect,
 } from './StrategyUseInsertionEffect'
 
-const BOX_SIZE = 32
 const chars = `!§$%/()=?*#<>-_.:,;+0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz`
 
 type StrategyType = 'insert-during-render' | 'no-css-in-js' | 'use-insertion-effect'
@@ -39,13 +31,36 @@ export default function Benchmark(props: {
   distribute: boolean
   maxIterations: number
   interval: number
+  pending: boolean
+  size: number
+  startTransition: (callback: () => void) => void
 }) {
-  const {children, strategy, layoutTrashing, fps, distribute, maxIterations, interval} = props
+  const {
+    children,
+    strategy,
+    layoutTrashing,
+    fps,
+    distribute,
+    maxIterations,
+    interval,
+    pending,
+    size,
+    startTransition,
+  } = props
+  const [width, setWidth] = useState(0)
+  const [height, setHeight] = useState(0)
+
+  const cols = Math.floor(width / size)
+  const rows = Math.max(Math.ceil(height / size) - 1, 1)
+  const cells: string[] = []
+  for (let y = 0; y < rows; y += 1) {
+    for (let x = 0; x < cols; x += 1) {
+      cells.push(`${y}:${x}`)
+    }
+  }
+
   const [tick, setTick] = useState(1)
-  const [tock, setTock] = useState(0)
-  const [cells, setCells] = useState<string[]>([])
-  const [renderedCells, setRenderedCells] = useState<Set<string>>(() => new Set())
-  const [cols, setCols] = useState(1)
+  const [renderedCells] = useState(() => new Set<string>())
   const [hueShiftPalette, setHueShiftPalette] =
     useState<ReturnType<typeof createHueShiftPalette>>(generateHueShiftPalette)
 
@@ -56,44 +71,43 @@ export default function Benchmark(props: {
   })
 
   const handleTick = useEffectEvent(() => {
-    setHueShiftPalette(generateHueShiftPalette())
-    // Reset rendered cells
-    setRenderedCells(new Set([...cells]))
+    if (tick >= maxIterations) {
+      console.log('maxIterations reached, stopping ')
+      return
+    }
 
-    if (strategy === 'use-insertion-effect') {
-      clearUseInsertionEffectRules()
-    } else if (strategy === 'insert-during-render') {
-      clearInsertDuringRenderRules()
+    if (renderedCells.size >= cells.length) {
+      startTransition(() => {
+        setHueShiftPalette(generateHueShiftPalette())
+        console.log('rendered cells', renderedCells.size, cells.length)
+        // Reset rendered cells
+        renderedCells.clear()
+        setTick((prev) => ++prev)
+      })
+
+      if (strategy === 'use-insertion-effect') {
+        clearUseInsertionEffectRules()
+      } else if (strategy === 'insert-during-render') {
+        clearInsertDuringRenderRules()
+      }
     }
   })
+  const stopInterval = tick >= maxIterations
   useEffect(() => {
-    if (tick > tock || tock >= maxIterations) {
+    if (stopInterval) {
+      console.log('maxIterations reached, stopping interval')
       return
     }
-    const timeout = setTimeout(() => {
-      setTick((prev) => ++prev)
-      handleTick()
-    }, interval)
-    return () => clearTimeout(timeout)
-  }, [tick, tock, handleTick, maxIterations, interval])
+    const id = setInterval(() => handleTick(), interval)
+    // Schedule an eager first tick, so that dragging the interval slider feels faster
+    const timeout = requestIdleCallback(() => handleTick(), {timeout: interval / 2})
+    return () => {
+      clearInterval(id)
+      cancelIdleCallback(timeout)
+    }
+  }, [handleTick, interval, stopInterval])
 
-  const registerRenderedCell = (cell: string) => {
-    // startTransition(() => setRenderedCells((prev) => new Set(prev).add(cell)))
-    setRenderedCells((prev) => {
-      // No-op to prevent infinite loop
-      if (prev.size === 0) return prev
-      prev.delete(cell)
-      // Only return a new Set, and thus, schedule a React update, if the Set is now empty
-      return prev.size === 0 ? new Set() : prev
-    })
-  }
-  useEffect(() => {
-    if (tick === tock || cells.length < 1 || renderedCells.size > 0) {
-      return
-    }
-    const timeout = setTimeout(() => setTock(tick), interval)
-    return () => clearTimeout(timeout)
-  }, [cells, interval, renderedCells, tick, tock])
+  const registerRenderedCell = (cell: string) => renderedCells.add(cell)
 
   useEffect(() => {
     return () => {
@@ -108,28 +122,15 @@ export default function Benchmark(props: {
 
   useLayoutEffect(() => {
     const handler = () => {
-      const {width} = cellsRef.current!.getBoundingClientRect()
-      const cols = Math.floor(width / BOX_SIZE)
-      const height = window.innerHeight - 16
-      const rows = Math.max(Math.ceil(height / BOX_SIZE) - 1, 1)
-      const cells: string[] = []
-      for (let y = 0; y < rows; y += 1) {
-        for (let x = 0; x < cols; x += 1) {
-          cells.push(`${y}:${x}`)
-        }
-      }
       startTransition(() => {
-        setTick(1)
-        setTock(0)
-        setCols(cols)
-        setCells(cells)
-        setRenderedCells(new Set([...cells]))
+        setWidth(cellsRef.current!.getBoundingClientRect().width || window.innerWidth - 16)
+        setHeight(window.innerHeight - 16)
       })
     }
     window.addEventListener('resize', handler, {passive: true})
     handler()
     return () => window.removeEventListener('resize', handler)
-  }, [])
+  }, [startTransition])
 
   const cellsRef = useRef<HTMLDivElement>(null)
 
@@ -155,10 +156,13 @@ export default function Benchmark(props: {
         registerRenderedCell={registerRenderedCell}
         strategy={strategy}
         tick={tick}
+        size={size}
+        startTransition={startTransition}
+        interval={interval}
       />
       {fps === 'show' && (
         <>
-          <Clock tick={tick} tock={tock} />
+          <Clock tick={tick} pending={pending} />
           <Stats />
         </>
       )}
@@ -177,6 +181,9 @@ function Cells(props: {
   registerRenderedCell: (cell: string) => void
   strategy: StrategyType
   tick: number
+  size: number
+  startTransition: (callback: () => void) => void
+  interval: number
 }) {
   const {
     cells,
@@ -188,6 +195,9 @@ function Cells(props: {
     registerRenderedCell,
     strategy,
     tick,
+    startTransition,
+    size,
+    interval,
   } = props
 
   const palette = hueShiftPalette.map((color) => formatHex(color))
@@ -198,7 +208,7 @@ function Cells(props: {
       className="grid w-full justify-stretch"
       style={{
         textAlign: 'center',
-        grid: `minmax(${BOX_SIZE}px, min-content) / repeat(${cols}, minmax(${BOX_SIZE}px, 1fr))`,
+        grid: `minmax(${size}px, min-content) / repeat(${cols}, minmax(${size}px, 1fr))`,
       }}
     >
       {cells.map((cell) => (
@@ -211,6 +221,9 @@ function Cells(props: {
           strategy={strategy}
           tick={tick}
           registerRenderedCell={registerRenderedCell}
+          startTransition={startTransition}
+          interval={interval}
+          size={size}
         />
       ))}
     </div>
@@ -226,44 +239,80 @@ function Cell(props: {
   distribute: boolean
   registerRenderedCell: (cell: string) => void
   tick: number
+  size: number
+  startTransition: (callback: () => void) => void
+  interval: number
 }) {
-  const {palette, layoutTrashing, strategy, distribute, id, registerRenderedCell} = props
-  const tick = useDeferredValue(props.tick)
+  const {
+    palette,
+    layoutTrashing,
+    strategy,
+    distribute,
+    id,
+    registerRenderedCell,
+    tick,
+    size,
+    startTransition,
+  } = props
+  const duration = 700
 
   const cellRef = useRef<HTMLDivElement>(null)
-  const [_cell, setCell] = useState({
+  const [cell, setCell] = useState({
     tick: 0,
     char: '',
     fill: palette[Math.floor(Math.random() * palette.length)],
   })
-  const cell = useDeferredValue(_cell)
 
-  useEffect(() => {
-    if (cellRef.current && cell.tick === tick) {
-      registerRenderedCell(id)
-      cellRef.current.animate(
-        [
-          {backgroundColor: cell.fill, color: cell.fill},
-          {backgroundColor: 'transparent', color: cell.fill},
-        ],
-        {duration: 700, easing: 'cubic-bezier(0, 0, 0.2, 1)', fill: 'forwards'},
-      )
+  useLayoutEffect(() => {
+    if (cell.tick === tick) {
+      if (strategy === 'no-css-in-js') {
+        cellRef.current?.animate(
+          [
+            {backgroundColor: cell.fill, color: cell.fill},
+            {backgroundColor: 'transparent', color: cell.fill},
+          ],
+          {duration, easing: 'cubic-bezier(0, 0, 0.2, 1)', fill: 'forwards'},
+        )
+      }
+
+      const timeout = setTimeout(() => registerRenderedCell(id), duration)
+      return () => clearTimeout(timeout)
     }
-  }, [cell.fill, cell.tick, id, registerRenderedCell, tick])
+  }, [cell.fill, cell.tick, id, registerRenderedCell, strategy, tick])
 
   const renderedStrategy =
     cell.tick === tick ? (
       strategy === 'use-insertion-effect' ? (
-        <StrategyUseInsertionEffect char={cell.char} layoutTrashing={layoutTrashing} />
+        <StrategyUseInsertionEffect
+          char={cell.char}
+          layoutTrashing={layoutTrashing}
+          duration={duration}
+          fill={cell.fill}
+        />
       ) : strategy === 'insert-during-render' ? (
-        <StrategyInsertDuringRender char={cell.char} layoutTrashing={layoutTrashing} />
+        <StrategyInsertDuringRender
+          char={cell.char}
+          layoutTrashing={layoutTrashing}
+          duration={duration}
+          fill={cell.fill}
+        />
       ) : null
     ) : null
 
   return (
-    <div ref={cellRef} className="cell" data-strategy={strategy} data-char={cell.char || ' '}>
+    <div
+      ref={cellRef}
+      className="cell"
+      data-strategy={strategy}
+      data-char={cell.char || ' '}
+      style={{fontSize: `${size / 2}px`}}
+    >
       {layoutTrashing === 'force' && (
-        <LayoutThrashing cellRef={cellRef} shouldRenderSlowly={tick === cell.tick && !!cell.char} />
+        <LayoutThrashing
+          cellRef={cellRef}
+          shouldRenderSlowly={tick === cell.tick && !!cell.char}
+          startTransition={startTransition}
+        />
       )}
       {renderedStrategy}
       <DistributedCell
@@ -272,6 +321,7 @@ function Cell(props: {
         palette={palette}
         setCell={setCell}
         tick={tick}
+        startTransition={startTransition}
       />
     </div>
   )
@@ -294,18 +344,21 @@ function DistributedCell(props: {
       fill: string
     }>
   >
+  startTransition: (callback: () => void) => void
 }) {
-  const {cell, tick, palette, distribute, setCell} = props
+  const {cell, tick, palette, distribute, setCell, startTransition} = props
 
   useEffect(() => {
     if (tick === cell.tick) return
     const fill = palette[Math.floor(Math.random() * palette.length)]
     const setRandomChar = () =>
-      setCell({
-        char: chars[Math.floor(Math.random() * chars.length)],
-        tick,
-        fill,
-      })
+      startTransition(() =>
+        setCell({
+          char: chars[Math.floor(Math.random() * chars.length)],
+          tick,
+          fill,
+        }),
+      )
     // It can either execute somewhat later, which distributes load a little
     if (distribute) {
       const timeout = setTimeout(setRandomChar, Math.random() * 1000)
@@ -313,7 +366,7 @@ function DistributedCell(props: {
     }
     // Or execute right away, which effectively creates hundreds of textgeometries at once
     else setRandomChar()
-  }, [cell.tick, distribute, palette, setCell, tick])
+  }, [cell.tick, distribute, palette, setCell, startTransition, tick])
 
   return null
 }

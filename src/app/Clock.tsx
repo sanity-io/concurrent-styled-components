@@ -5,8 +5,8 @@ import {useEffect, useRef} from 'react'
 const SPEED = 0.003 / Math.PI
 const FRAMES = 10
 
-export default function Clock(props: {tick: number; tock: number}) {
-  const {tick, tock} = props
+export default function Clock(props: {tick: number; pending: boolean}) {
+  const {tick, pending} = props
   const faceRef = useRef<SVGCircleElement | null>(null)
   const arcGroupRef = useRef<SVGGElement | null>(null)
   const clockHandRef = useRef<SVGPathElement | null>(null)
@@ -98,7 +98,7 @@ export default function Clock(props: {tick: number; tock: number}) {
           ref={clockHandRef}
         />
         <text
-          className={`transition-colors ${tick === tock ? 'fill-white' : 'fill-teal-400 duration-0'}`}
+          className={`transition-colors ${pending ? 'fill-teal-400 duration-0' : 'fill-white'}`}
           x="155"
           y="160"
           fill="white"
