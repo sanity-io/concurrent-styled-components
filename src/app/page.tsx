@@ -1,3 +1,5 @@
+'use client'
+
 import dynamic from 'next/dynamic'
 
 const BenchmarkControls = dynamic(() => import('./BenchmarkControls'), {
@@ -5,7 +7,7 @@ const BenchmarkControls = dynamic(() => import('./BenchmarkControls'), {
   loading: () => <Spinner />,
 })
 
-export default async function Index() {
+export default function Index() {
   return <BenchmarkControls />
 }
 

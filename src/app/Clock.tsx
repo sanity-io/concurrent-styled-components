@@ -102,7 +102,7 @@ export default function Clock(props: {tick: number; pending: boolean}) {
           x="155"
           y="160"
           fill="white"
-          font-size="70"
+          fontSize="70"
           filter="url(#blackOutlineEffect)"
           textAnchor="middle"
           dominantBaseline="middle"
