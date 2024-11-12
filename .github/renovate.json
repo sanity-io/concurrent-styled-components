@@ -4,7 +4,7 @@
   "packageRules": [
     {
       "matchDepNames": ["next", "eslint-config-next"],
-      "followTag": "canary"
+      "followTag": "latest"
     },
     {
       "matchDepNames": ["react", "react-dom"],
@@ -12,7 +12,7 @@
     },
     {
       "matchDepNames": ["babel-plugin-react-compiler", "eslint-plugin-react-compiler"],
-      "followTag": "experimental"
+      "followTag": "beta"
     }
   ]
 }
