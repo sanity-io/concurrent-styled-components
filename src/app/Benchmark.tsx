@@ -1,9 +1,10 @@
 'use client'
 
 import {formatHex} from 'culori'
-import {useEffect, useLayoutEffect, useRef, useState} from 'react'
+import {useEffect, useLayoutEffect, useReducer, useRef, useState} from 'react'
 import {useEffectEvent} from 'use-effect-event'
 
+import {createGlobalStyle, styled} from '~/components/styled-components-18'
 import {createHueShiftPalette, generateHueShiftPalette} from '~/lib/palette'
 
 import Clock from './Clock'
@@ -28,6 +29,19 @@ type StrategyType =
   | 'use-react-18'
   | 'use-react-19'
 type LayoutThrashingType = 'force' | 'avoid'
+
+const Cody = styled.div`
+  display: block;
+  width: 100%;
+  text-align: center;
+  color: red;
+`
+
+const Olsen = createGlobalStyle`
+  body {
+    background-color: red;
+  }
+`
 
 export default function Benchmark(props: {
   children: React.ReactNode
@@ -143,12 +157,22 @@ export default function Benchmark(props: {
   }, [startTransition])
 
   const cellsRef = useRef<HTMLDivElement>(null)
+  const [mounted, mount] = useReducer(() => true, false)
+  useEffect(() => {
+    mount()
+  }, [])
 
   return (
     <main
       className="flex h-full min-h-[350px] w-full flex-col items-center gap-2 overflow-auto overscroll-contain p-2 transition-colors duration-700 ease-out"
       style={{backgroundColor: background}}
     >
+      {mounted && (
+        <>
+          <Cody>Hi</Cody>
+          <Olsen />
+        </>
+      )}
       <div
         className="fixed right-2 top-2 w-96 overflow-auto rounded-xl shadow"
         style={{maxHeight: 'calc(100vh - 1rem)', maxWidth: '60vw'}}

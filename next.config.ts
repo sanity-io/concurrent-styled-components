@@ -9,7 +9,9 @@ const nextConfig: NextConfig = {
   },
   compiler: {
     define: {
-      __VERSION__: '6.1.13',
+      __VERSION__: '6.1.14',
+      // False, as we're not testing server APIs here that are exposed on non-browser exports
+      __SERVER__: 'false',
     },
   },
 }

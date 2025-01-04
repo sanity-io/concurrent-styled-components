@@ -15,5 +15,5 @@
  * Therefore, the most compatible way to shadow the prototype's "toString" property is to define a new "toString" property on this object.
  */
 export function setToString(object: object, toStringFn: () => string) {
-  Object.defineProperty(object, 'toString', { value: toStringFn });
+  Object.defineProperty(object, 'toString', {value: toStringFn})
 }

@@ -1,4 +1,4 @@
-import styled, {LibraryStyled, Styled, StyledInstance} from './constructors/styled'
+import {type LibraryStyled, type Styled, styled, type StyledInstance} from './constructors/styled'
 
 export * from './base'
 export type {
@@ -26,4 +26,4 @@ export type {
   SupportedHTMLElements,
   WebTarget,
 } from './types'
-export {type LibraryStyled, type Styled, styled,type StyledInstance}
+export {type LibraryStyled, type Styled, styled, type StyledInstance}
