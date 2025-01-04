@@ -155,7 +155,7 @@ function useStyledComponentImpl<Props extends object>(
   const theme = determineTheme(props, contextTheme, defaultProps) || EMPTY_OBJECT
 
   const context = resolveContext<Props>(componentAttrs, props, theme)
-  const elementToBeCreated: WebTarget = context.as || target
+  const ElementToBeCreated: WebTarget = context.as || target
   const propsForElement: Dict<any> = {}
 
   for (const key in context) {
@@ -166,7 +166,7 @@ function useStyledComponentImpl<Props extends object>(
       // Omit transient props and execution props.
     } else if (key === 'forwardedAs') {
       propsForElement.as = context.forwardedAs
-    } else if (!shouldForwardProp || shouldForwardProp(key, elementToBeCreated)) {
+    } else if (!shouldForwardProp || shouldForwardProp(key, ElementToBeCreated)) {
       propsForElement[key] = context[key]
 
       if (
@@ -175,7 +175,7 @@ function useStyledComponentImpl<Props extends object>(
         !isPropValid(key) &&
         !seenUnknownProps.has(key) &&
         // Only warn on DOM Element.
-        domElements.has(elementToBeCreated as any)
+        domElements.has(ElementToBeCreated as any)
       ) {
         seenUnknownProps.add(key)
         console.warn(
@@ -201,8 +201,8 @@ function useStyledComponentImpl<Props extends object>(
 
   propsForElement[
     // handle custom elements which React doesn't properly alias
-    isTag(elementToBeCreated) &&
-    !domElements.has(elementToBeCreated as Extract<typeof domElements, string>)
+    isTag(ElementToBeCreated) &&
+    !domElements.has(ElementToBeCreated as Extract<typeof domElements, string>)
       ? 'class'
       : 'className'
   ] = classString
@@ -214,7 +214,7 @@ function useStyledComponentImpl<Props extends object>(
     propsForElement.ref = forwardedRef
   }
 
-  return createElement(elementToBeCreated, propsForElement)
+  return <ElementToBeCreated {...propsForElement} />
 }
 
 function createStyledComponent<

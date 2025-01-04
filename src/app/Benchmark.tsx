@@ -1,7 +1,7 @@
 'use client'
 
 import {formatHex} from 'culori'
-import {useEffect, useLayoutEffect, useReducer, useRef, useState} from 'react'
+import {forwardRef, useEffect, useLayoutEffect, useReducer, useRef, useState} from 'react'
 import {useEffectEvent} from 'use-effect-event'
 
 import {createGlobalStyle, styled} from '~/components/styled-components-18'
@@ -30,12 +30,25 @@ type StrategyType =
   | 'use-react-19'
 type LayoutThrashingType = 'force' | 'avoid'
 
-const Cody = styled.div`
+const Cody = styled.div.withConfig({displayName: 'Cody'})`
   display: block;
   width: 100%;
   text-align: center;
   color: red;
 `
+
+const ComponentWithForwardedRef = forwardRef<HTMLDivElement>((props: any, ref: any) => {
+  console.log('ComponentWithForwardedRef', props.ref, ref)
+  return <div ref={ref} {...props} />
+})
+
+const ComponentWithRefProp = (props: any) => {
+  console.log('ComponentWithRefProp', props.ref)
+  return <div {...props} />
+}
+
+const StyledComponentWithForwardedRef = styled(ComponentWithForwardedRef)``
+const StyledComponentWithRefProp = styled(ComponentWithRefProp)``
 
 const Olsen = createGlobalStyle`
   body {
@@ -171,6 +184,26 @@ export default function Benchmark(props: {
         <>
           <Cody>Hi</Cody>
           <Olsen />
+          <ComponentWithForwardedRef
+            ref={(node) => {
+              console.log('ref ComponentWithForwardedRef', node)
+            }}
+          />
+          <ComponentWithRefProp
+            ref={(node) => {
+              console.log('ref ComponentWithRefProp', node)
+            }}
+          />
+          <StyledComponentWithForwardedRef
+            ref={(node) => {
+              console.log('ref StyledComponentWithForwardedRef', node)
+            }}
+          />
+          <StyledComponentWithRefProp
+            ref={(node) => {
+              console.log('ref StyledComponentWithRefProp', node)
+            }}
+          />
         </>
       )}
       <div
