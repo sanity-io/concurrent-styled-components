@@ -1,6 +1,7 @@
 import React, { useContext, useEffect, useMemo, useState } from 'react';
 import shallowequal from 'shallowequal';
 import type stylis from 'stylis';
+
 import StyleSheet from '../sheet';
 import { InsertionTarget, ShouldForwardProp, Stringifier } from '../types';
 import createStylisInstance from '../utils/stylis';

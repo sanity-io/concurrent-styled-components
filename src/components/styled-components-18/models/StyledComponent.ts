@@ -1,6 +1,7 @@
 import isPropValid from '@emotion/is-prop-valid';
 import { useInsertionEffectAlwaysWithSyncFallback } from '@emotion/use-insertion-effect-with-fallbacks';
 import React, { createElement, Ref, useDebugValue } from 'react';
+
 import { IS_BROWSER, SC_VERSION } from '../constants';
 import type {
   AnyComponent,
@@ -128,7 +129,7 @@ function resolveContext<Props extends object>(
   return context;
 }
 
-let seenUnknownProps = new Set();
+const seenUnknownProps = new Set();
 
 function useStyledComponentImpl<Props extends object>(
   forwardedComponent: IStyledComponent<'web', Props>,
@@ -281,7 +282,7 @@ function createStyledComponent<
    * forwardRef creates a new interim component, which we'll take advantage of
    * instead of extending ParentComponent to create _another_ interim class
    */
-  let WrappedStyledComponent = React.forwardRef(forwardRefRender) as unknown as IStyledComponent<
+  const WrappedStyledComponent = React.forwardRef(forwardRefRender) as unknown as IStyledComponent<
     'web',
     any
   > &

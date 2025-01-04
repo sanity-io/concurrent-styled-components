@@ -1,4 +1,5 @@
 import React from 'react';
+
 import { AnyComponent } from '../types';
 
 const hasSymbol = typeof Symbol === 'function' && Symbol.for;
@@ -116,7 +117,7 @@ export default function hoistNonReactStatics<
       }
     }
 
-    let keys: (String | Symbol)[] = getOwnPropertyNames(sourceComponent);
+    let keys: (string | symbol)[] = getOwnPropertyNames(sourceComponent);
 
     if (getOwnPropertySymbols) {
       keys = keys.concat(getOwnPropertySymbols(sourceComponent));

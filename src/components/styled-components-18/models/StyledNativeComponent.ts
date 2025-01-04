@@ -1,4 +1,5 @@
 import React, { createElement, Ref, useMemo } from 'react';
+
 import type {
   Attrs,
   BaseObject,
@@ -35,7 +36,7 @@ function useResolvedAttrs<Props extends object>(
   const resolvedAttrs: Dict<any> = {};
 
   attrs.forEach(attrDef => {
-    let resolvedAttrDef = isFunction(attrDef) ? attrDef(context) : attrDef;
+    const resolvedAttrDef = isFunction(attrDef) ? attrDef(context) : attrDef;
     let key;
 
     for (key in resolvedAttrDef) {
@@ -157,7 +158,7 @@ export default (InlineStyle: IInlineStyleConstructor<any>) => {
      * forwardRef creates a new interim component, which we'll take advantage of
      * instead of extending ParentComponent to create _another_ interim class
      */
-    let WrappedStyledComponent = React.forwardRef(forwardRefRender) as unknown as IStyledComponent<
+    const WrappedStyledComponent = React.forwardRef(forwardRefRender) as unknown as IStyledComponent<
       'native',
       any
     > &

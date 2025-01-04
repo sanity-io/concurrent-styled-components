@@ -1,5 +1,6 @@
 import { useInsertionEffectWithLayoutFallback } from '@emotion/use-insertion-effect-with-fallbacks';
 import React from 'react';
+
 import { STATIC_EXECUTION_CONTEXT } from '../constants';
 import GlobalStyle from '../models/GlobalStyle';
 import { useStyleSheetContext } from '../models/StyleSheetManager';

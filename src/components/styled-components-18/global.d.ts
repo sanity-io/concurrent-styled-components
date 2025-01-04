@@ -4,14 +4,14 @@ declare module '@babel/helper-module-imports' {
   export function addDefault(
     program: NodePath,
     identifier: types.Identifier,
-    options: Object
+    options: object
   ): types.Identifier;
 
   export function addNamed(
     program: NodePath,
     name: string,
     identifier: types.Identifier,
-    options: Object
+    options: object
   ): types.Identifier;
 }
 

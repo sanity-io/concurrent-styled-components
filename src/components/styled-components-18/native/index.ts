@@ -1,6 +1,7 @@
 import transformDeclPairs from 'css-to-react-native';
 import { parse } from 'postcss';
 import React from 'react';
+
 import constructWithOptions, { Styled } from '../constructors/constructWithOptions';
 import css from '../constructors/css';
 import withTheme from '../hoc/withTheme';
@@ -118,13 +119,13 @@ export {
   StyledOptions,
 } from '../types';
 export {
-  ThemeConsumer,
-  ThemeContext,
-  ThemeProvider,
   css,
   styled as default,
   isStyledComponent,
   styled,
+  ThemeConsumer,
+  ThemeContext,
+  ThemeProvider,
   toStyleSheet,
   useTheme,
   withTheme,

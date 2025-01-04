@@ -1,8 +1,9 @@
 import * as stylis from 'stylis';
+
 import { Stringifier } from '../types';
 import { EMPTY_ARRAY, EMPTY_OBJECT } from './empties';
 import throwStyledError from './error';
-import { SEED, phash } from './hash';
+import { phash,SEED } from './hash';
 
 const AMP_REGEX = /&/g;
 const COMMENT_REGEX = /^\s*\/\/.*$/gm;
@@ -16,7 +17,7 @@ export type ICreateStylisInstance = {
  * Takes an element and recurses through it's rules added the namespace to the start of each selector.
  * Takes into account media queries by recursing through child rules if they are present.
  */
-function recursivelySetNamepace(compiled: stylis.Element[], namespace: String): stylis.Element[] {
+function recursivelySetNamepace(compiled: stylis.Element[], namespace: string): stylis.Element[] {
   return compiled.map(rule => {
     if (rule.type === 'rule') {
       // add the namespace to the start

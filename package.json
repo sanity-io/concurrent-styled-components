@@ -34,7 +34,7 @@
     "@types/node": "latest",
     "@types/react": "^19.0.2",
     "@types/react-dom": "^19.0.2",
-    "eslint": "^9.17.0",
+    "eslint": "^8",
     "eslint-config-next": "latest",
     "eslint-plugin-react-compiler": "beta",
     "eslint-plugin-simple-import-sort": "^12.1.1",
