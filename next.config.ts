@@ -7,6 +7,11 @@ const nextConfig: NextConfig = {
   env: {
     SC_DISABLE_SPEEDY: 'false',
   },
+  compiler: {
+    define: {
+      __VERSION__: '6.1.13',
+    },
+  },
 }
 
 export default nextConfig

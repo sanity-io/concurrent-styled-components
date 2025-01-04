@@ -7,7 +7,7 @@ export const LayoutThrashing = memo(function LayoutThrashing({
   shouldRenderSlowly,
   startTransition,
 }: {
-  cellRef: React.RefObject<HTMLDivElement>
+  cellRef: React.RefObject<HTMLDivElement | null>
   shouldRenderSlowly: boolean
   startTransition: (callback: () => void) => void
 }) {

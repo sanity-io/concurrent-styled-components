@@ -17,10 +17,16 @@ import {
   clearRules as clearUseInsertionEffectRules,
   StrategyUseInsertionEffect,
 } from './StrategyUseInsertionEffect'
+import {clearRules as clearUseReact18Rules, StrategyUseReact18} from './StrategyUseReact18'
 
 const chars = `!§$%/()=?*#<>-_.:,;+0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz`
 
-type StrategyType = 'insert-during-render' | 'no-css-in-js' | 'use-insertion-effect'
+type StrategyType =
+  | 'insert-during-render'
+  | 'no-css-in-js'
+  | 'use-insertion-effect'
+  | 'use-react-18'
+  | 'use-react-19'
 type LayoutThrashingType = 'force' | 'avoid'
 
 export default function Benchmark(props: {
@@ -85,7 +91,9 @@ export default function Benchmark(props: {
         setTick((prev) => ++prev)
       })
 
-      if (strategy === 'use-insertion-effect') {
+      if (strategy === 'use-react-18') {
+        clearUseReact18Rules()
+      } else if (strategy === 'use-insertion-effect') {
         clearUseInsertionEffectRules()
       } else if (strategy === 'insert-during-render') {
         clearInsertDuringRenderRules()
@@ -112,7 +120,9 @@ export default function Benchmark(props: {
   useEffect(() => {
     return () => {
       // Clear out the StyleSheetManager rules and cache, to prevent cached rules to skew the results
-      if (strategy === 'use-insertion-effect') {
+      if (strategy === 'use-react-18') {
+        clearUseReact18Rules()
+      } else if (strategy === 'use-insertion-effect') {
         clearUseInsertionEffectRules()
       } else if (strategy === 'insert-during-render') {
         clearInsertDuringRenderRules()
@@ -173,7 +183,7 @@ Benchmark.displayName = 'Benchmark'
 
 function Cells(props: {
   cells: string[]
-  cellsRef: React.RefObject<HTMLDivElement>
+  cellsRef: React.RefObject<HTMLDivElement | null>
   cols: number
   distribute: boolean
   hueShiftPalette: ReturnType<typeof createHueShiftPalette>
@@ -282,7 +292,14 @@ function Cell(props: {
 
   const renderedStrategy =
     cell.tick === tick ? (
-      strategy === 'use-insertion-effect' ? (
+      strategy === 'use-react-18' ? (
+        <StrategyUseReact18
+          char={cell.char}
+          layoutTrashing={layoutTrashing}
+          duration={duration}
+          fill={cell.fill}
+        />
+      ) : strategy === 'use-insertion-effect' ? (
         <StrategyUseInsertionEffect
           char={cell.char}
           layoutTrashing={layoutTrashing}

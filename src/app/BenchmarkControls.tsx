@@ -136,6 +136,14 @@ export default function BenchmarkControls() {
                       <SelectItem value="use-insertion-effect">
                         insert CSS with useInsertionEffect
                       </SelectItem>
+                      <SelectItem value="use-react-18">with React 18 as the basline</SelectItem>
+                    </SelectGroup>
+                    <SelectSeparator />
+                    <SelectGroup>
+                      <SelectLabel>experimental styled-components fork</SelectLabel>
+                      <SelectItem value="use-react-19">
+                        rendering an inline CSS stylesheet with React 19
+                      </SelectItem>
                     </SelectGroup>
                   </SelectContent>
                 </Select>
@@ -255,6 +263,8 @@ function validateStrategy(strategy: string | null) {
     case 'insert-during-render':
     case 'no-css-in-js':
     case 'use-insertion-effect':
+    case 'use-react-18':
+    case 'use-react-19':
       return strategy
     default:
       return 'no-css-in-js'
