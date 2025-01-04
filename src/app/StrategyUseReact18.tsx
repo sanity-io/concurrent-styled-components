@@ -2,8 +2,8 @@
  * Uses a modern baseline that requires React 18, it builds upon StrategyUseInsertionEffect
  */
 
-import {__PRIVATE__, keyframes, styled} from '../components/styled-components'
-import type {Keyframes} from '../components/styled-components/types'
+import {__PRIVATE__, keyframes, styled} from '../components/styled-components-18'
+import type {Keyframes} from '../components/styled-components-18/types'
 
 export function StrategyUseReact18(props: {
   char: string
