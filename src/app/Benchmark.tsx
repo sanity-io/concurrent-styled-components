@@ -4,7 +4,7 @@ import {formatHex} from 'culori'
 import {forwardRef, useEffect, useLayoutEffect, useReducer, useRef, useState} from 'react'
 import {useEffectEvent} from 'use-effect-event'
 
-import {createGlobalStyle, styled} from '~/components/styled-components-18'
+import {createGlobalStyle, styled} from '~/components/styled-components-19'
 import {createHueShiftPalette, generateHueShiftPalette} from '~/lib/palette'
 
 import Clock from './Clock'
@@ -19,6 +19,7 @@ import {
   StrategyUseInsertionEffect,
 } from './StrategyUseInsertionEffect'
 import {clearRules as clearUseReact18Rules, StrategyUseReact18} from './StrategyUseReact18'
+import {clearRules as clearUseReact19Rules, StrategyUseReact19} from './StrategyUseReact19'
 
 const chars = `!§$%/()=?*#<>-_.:,;+0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz`
 
@@ -118,7 +119,9 @@ export default function Benchmark(props: {
         setTick((prev) => ++prev)
       })
 
-      if (strategy === 'use-react-18') {
+      if (strategy === 'use-react-19') {
+        clearUseReact19Rules()
+      } else if (strategy === 'use-react-18') {
         clearUseReact18Rules()
       } else if (strategy === 'use-insertion-effect') {
         clearUseInsertionEffectRules()
@@ -147,7 +150,9 @@ export default function Benchmark(props: {
   useEffect(() => {
     return () => {
       // Clear out the StyleSheetManager rules and cache, to prevent cached rules to skew the results
-      if (strategy === 'use-react-18') {
+      if (strategy === 'use-react-19') {
+        clearUseReact19Rules()
+      } else if (strategy === 'use-react-18') {
         clearUseReact18Rules()
       } else if (strategy === 'use-insertion-effect') {
         clearUseInsertionEffectRules()
@@ -349,7 +354,14 @@ function Cell(props: {
 
   const renderedStrategy =
     cell.tick === tick ? (
-      strategy === 'use-react-18' ? (
+      strategy === 'use-react-19' ? (
+        <StrategyUseReact19
+          char={cell.char}
+          layoutTrashing={layoutTrashing}
+          duration={duration}
+          fill={cell.fill}
+        />
+      ) : strategy === 'use-react-18' ? (
         <StrategyUseReact18
           char={cell.char}
           layoutTrashing={layoutTrashing}
