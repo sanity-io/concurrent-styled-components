@@ -13,7 +13,7 @@
     "@radix-ui/react-label": "^2.1.0",
     "@radix-ui/react-select": "^2.1.1",
     "@radix-ui/react-slider": "^1.2.0",
-    "@sanity/styled-components": "6.1.13",
+    "@sanity/styled-components": "6.1.18-canary.4",
     "@trillionhq/stats.js": "^0.23.0",
     "@types/culori": "^2.1.1",
     "babel-plugin-react-compiler": "beta",
@@ -24,7 +24,7 @@
     "next": "^15.0.3",
     "react": "rc",
     "react-dom": "rc",
-    "styled-components": "6.1.13",
+    "styled-components": "6.1.18",
     "tailwind-merge": "^2.4.0",
     "tailwindcss-animate": "^1.0.7",
     "use-effect-event": "^1.0.2"
