@@ -15,7 +15,7 @@
     "@radix-ui/react-slider": "^1.2.0",
     "@sanity/styled-components": "6.1.18-canary.4",
     "@trillionhq/stats.js": "^0.23.0",
-    "@types/culori": "^2.1.1",
+    "@types/culori": "^4.0.1",
     "babel-plugin-react-compiler": "beta",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
