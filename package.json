@@ -27,7 +27,7 @@
     "styled-components": "6.1.18",
     "tailwind-merge": "^2.4.0",
     "tailwindcss-animate": "^1.0.7",
-    "use-effect-event": "^1.0.2"
+    "use-effect-event": "^2.0.4"
   },
   "devDependencies": {
     "@sanity/prettier-config": "^1.0.3",
